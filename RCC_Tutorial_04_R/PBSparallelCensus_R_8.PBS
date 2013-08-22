@@ -1,0 +1,9 @@
+#PBS -l nodes=1:ppn=8
+#PBS -l walltime=10:00:00
+#PBS -j oe
+    
+cd $PBS_O_WORKDIR
+
+#load module and then run R 
+module load R
+time R --restore --save < sample_updated.in > outputCensus_R_new_8.out

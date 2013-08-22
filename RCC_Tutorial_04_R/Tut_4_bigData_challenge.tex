@@ -1,0 +1,457 @@
+\documentclass[journal]{/home/hoofar/LatexClasses/IEEEtran}
+%
+% If IEEEtran.cls has not been installed into the LaTeX system files,
+% manually specify the path to it like:
+% \documentclass[journal]{../sty/IEEEtran}
+\usepackage[cmex10]{amsmath}
+\usepackage{array}
+\usepackage{mdwmath}
+\usepackage{mdwtab}
+\usepackage{eqparbox}
+\usepackage[tight,footnotesize]{subfigure}
+\usepackage[font=footnotesize]{subfig}
+\usepackage{fixltx2e}
+\usepackage{stfloats}
+\hyphenation{op-tical net-works semi-conduc-tor}
+\usepackage{graphicx}
+
+
+\begin{document}
+
+\title{U.S. Census Mail Return Challenge}
+\author{Hoofar Pourzand, Email: rcc@rcc.its.psu.edu \\
+\textbf{Tutorial on R}\\ Research Computing and Cyberinfrastructure\\The Pennsylvania State University }
+\maketitle
+
+\begin{abstract}
+The goal of this paper is to summarize some of the results of the data based model prediction and its development using big data. The model developed over the ACB and PDB data bases provided by Kaggle© as one of its competitions during 2011- US Mail Return Rate Challenge-
+Develop a predicting model for predicting the Mail Return Rate using the. For the model evaluation a five fold cross validation metric is applied with some extra data provided by Dr. Le Bae. The results show a 3.1 WMEA. A parallel plat form on LionX machines at Penn State was also developed and RGPU based and RCPU based timings are also brought here for review. A speed up of 2.4 was achieved during the CPU penalization. 
+\end{abstract}
+
+\section*{Introduction}
+\subsection*{Data}
+
+The data, provided by Kaggle\texttrademark as a US MailReturn Rate Challenge, is used for modeling in this problem and their file description is provided in the table below.\\ %the model will be of the nature:
+
+Among the 207 predictors, lies outliers, intercorrolations, NAN and NA data entries that required imputations. \\
+As ovserved from the data, out of the 50 most over-weighted block groups, 30 contain college campuses, 18 contain prisons, and two contain military bases. Also, of these, 32 are in the training data and have mail response rates of 100 (21 cases), 0 (6), 50 (3), or 66.7 (2).\\ Other lessons from data visualization revealed:\\
+The Midwest has the highest return rates;\\
+The South and Southwest have the lowest;\\
+State boundaries sometimes have a surprising effect;\\
+West Virginia particularly stands out as having significantly worse return rates than its neighbors.\\
+Knowing these facts about the data, we’ll be better at managing the outliers and applying imputations. In the figures below, the heat diagram of the data over the map is plotted in R.\\
+
+\begin{table}[!h]
+    \begin{tabular}{|l|l|l|}
+        \hline
+        File Name           & Data Description          & Size(MB) \\ \hline
+        agg\_input\_train.csv & Aggregated testing data   & 128      \\ \hline
+        agg\_input\_test.csv  & Aggregated training data  & 83.9     \\ \hline
+        test\_ext.csv       & Extended testing data     & 5        \\ \hline
+        train\_ext.csv       & Extended training data    & 7.7      \\ \hline
+        training\_filev1.csv & Training data set         & 89.4     \\ \hline
+        sid                 & seeding in X              & ~        \\ \hline
+      
+    \end{tabular}
+\end{table}
+
+
+\begin{figure}[!h]
+\centering
+
+\includegraphics[width=3.0in]{/home/hoofar/Documents/Census/map01.jpg}
+    \caption{Most overweight Block Groups}
+    \label{map overweighted}    
+
+\end{figure}
+
+\begin{figure}[!h]
+\centering
+
+\includegraphics[width=3.0in]{/home/hoofar/Documents/Census/map01.jpg}
+    \caption{Most overweight Block Groups, The most overweighted block groups contain group
+    quarters populationss from college dorms, prisons, and military facilites.}
+    \label{map overweighted}    
+
+\end{figure}
+
+\begin{figure}[!h]
+\centering
+
+\includegraphics[width=3.0in]{/home/hoofar/Documents/Census/map02.jpg}
+    \caption{2010 Census Return Rate by County}
+    \label{map by county}    
+
+\end{figure}
+
+
+\subsection*{Data Prepration}
+
+ 
+The aggregated training data set has 85302 recording, lines, for each of the 207 variables. These data are treated in three steps:\\
+\textbf{Nominal data }
+\textbf{Imputation}
+\textbf{Transformation}
+
+%\subsection*{Prediction Models Review Notes}
+%Vector Machine Learning
+%State wise SVM then with C(“eps-regression”, “nu-regression”) and the Kernal options of (“linear”, “polynomial” , “ radial basis’” , “sigmoid”) is selected to be applied for this data set.
+
+\section{Method}
+
+
+ 
+Random forests is used as the prediction model with Numb of trees of 800 and 32  predictors: 32. 
+I did multiple runs and the residuals study plots are shown in the figure below. what can be inferred
+
+\textbf{ Why random forests were selected?  }
+In applying different models, one that crops up was the random forest. This method takes multiple small random samples of the data and makes a “decision tree” for each one, which branches according to the question asked about the data. Each tree, by itself, has little predictive power but all together the prediction power proved to be winning for this set of data. It’s misunderstood however that it’s a “brainless “approach that “just works” but in this paper several technical aspects of this method is reasoned which will well-serve us for this modeling challenge.  This method is very sensitive on what type of input-data is provided for it.
+
+
+The weights are increased c(I,3,5)* (weight of each obs) to give more authority to the first three predictors. 
+ Intercorrolation
+Centering the data, for we have some intercorrolation? 
+Performance evaluation
+Equal performance on training and test data
+ 
+For random forest and gofr generalized boosting we get better performance after the training.
+\subsection*{Growing on random Forsts}
+There are different ways to grow the forest. All of the wll known methodos grow the forest by perurbing the training set somehow. and therfore groign a tree on the perurbed training set instead, then pertuving the training set again and then growing another tree.Some familiar methods are bagging, boosting, arcing (Breiman, 1998), and additive logistic regression (Friedman, Hastie and Tibshirani, 1998) but in this paper the author's preferred method is the random forests which scored the highest 3.3 in 5 fold cross validation.
+
+\subsection*{Forests Compared to Trees}
+The performance of single trees
+(CART) to random forests is compared on different number of small
+and large data sets that were provided. A
+summary of this comparison as a test set misclassification error in percent between the two is put in the table below. The author suggests that for developing tables like this first all the data are concatenated and then hundred pairs of training/testing data sets are developed using 80-20 rule:\\
+leaving out a random 20\% of the data, then run-
+ning CART and the forest on the other 80\%. The
+left-out 20\% will be run down the tree and the forest
+and the error on this 20\% computed for both. This
+will be repeated 100 times and the errors averaged. People who have been in the classification field for a while find these increases in
+accuracy startling. Some errors are halved. Others
+are reduced by one-third.[L. Breiman, 2001] 
+
+\begin{table}[h!]
+    \begin{tabular}{|l|l|l|}
+        \hline
+        Data Set            & Forest & Single Tree \\ \hline
+        agg\_input\_train.csv & 3.82   & 4.2         \\ \hline
+        agg\_input\_test.csv  & 3.94   & 4.6         \\ \hline
+        ex\_train.csv        & 4.22   & 5.6         \\ \hline
+        ex\_test.csv         & 4.7    & 12.4        \\ \hline
+        
+    \end{tabular}
+\end{table}
+\subsection*{Variable importance-random forest}
+A significant and often overlooked point is what meaning can one give to statements that ``variable X is important or not important." This has puzzled the author on and off for quite a
+while. In fact, variable importance has always been
+defined operationally. In regression the ``important"
+
+variables are defined by doing ``best subsets" or variable deletion.
+Another approach used in linear methods such as
+logistic regression as we did in the second paper is to compare the size of the slope estimate for a variable to
+its estimated standard error which we also did by evaluating the MSE. The larger the ratio,
+the more ``important" the variable ``should" be. Both of these definitions can lead to erroneous conclusions.(L. Breiman, 2001)
+The author definition of variable importance is based
+on prediction. A variable might be considered
+important if deleting it seriously affects prediction
+accuracy. This brings up the problem that if two
+variables are highly correlated, deleting one or the
+other of them will not affect prediction accuracy.
+Deleting both of them may degrade accuracy considerably. The updated definition after consulting with (L. Breiman, 2001)- is by permuting variable values in the 10\% test set and computing how much
+that increased the test set error. \\ Predictor selection is the most important step when using random forst and such data prepration will be very rewarding.
+%for this paper howerver no comparison is made for validating thsi definitionl
+
+“Importance” does not yet have a satisfactory the-
+oretical definition (I haven’t been able to locate the
+article Brad references but I’ll keep looking). It
+depends on the dependencies between the output
+variable and the input variables, and on the depen-
+dencies between the input variables. The problem
+begs for research.
+
+
+\section{Computational Complexity}
+\textbf{Memory load, CPU time} Computing time of your model on the training data should be within 2 hours. 
+ Often The quantities given for complexity can be interpreted as the average
+memory stored in configurations.
+The approach which is appealing to this project in in computation
+theory’s classification of devices that recognize different classes of formal languages (sets of strings). Examples include finite memory devices (e.g. the finite state machines) and infinite memory devices (e.g. pushdown automata and Turing machines) [5]. The logical depth [5] of (say) a system’s configuration is the time required for a universal
+Turing machine to run the minimal program that reproduces it. Another example is to find in the statistical complexity of
+references, a quantity that measures the amount of
+memory needed, on average, to statistically reproduce a
+given configuration where we are assuming that the simplest possible computational
+class is used to describe the configuration. A higher level
+class is used only if lower ones fail to admit a finite description.  It is essential to consider the motivations behind a measure of statistical complexity: What questions might it help answer? 
+It is possible to meaningfully assess its utility only if 
+the motivations and goals for defining a complexity measure are stated clearly. Here we are more concerned with the computation time, CPU time. So the issue is the detection 
+  and quantification of patterns produced by the random forest function and any boosting and bagging methods that we apply as a preprocessing step.[5] A table is to be added book keeping the memory and CPU time of the cores for both the single thread and also GPU parallel and CPU parallel -PBS based- codes. 
+
+
+
+\bibliographystyle{IEEEtran}
+%% argument is your BibTeX string definitions and bibliography database(s)
+\bibliography{IEEEabrv,../bib/paper}
+
+%%
+%% <OR> manually copy in the resultant .bbl file
+%% set second argument of \begin to the number of references
+%% (used to reserve space for the reference number labels box)
+\begin{thebibliography}{1}
+%
+\bibitem{IEEEhowto:kopka}
+Breiman, L. (2001). Random forests. Machine Learning J. 45 5–32.
+\bibitem{IEEEhowto:kopka}
+Breiman, L. and Friedman, J. (1985). Estimating optimal trans-formations in multiple regression and correlation. J. Amer.Statist. Assoc. 80 580–619.
+\bibitem{IEEEhowto:kopka}
+Diaconis, P. and Efron, B. (1983). Computer intensive methods
+in statistics. Scientific American 248 116–131
+
+\bibitem{IEEEhowto:kopka}
+Web: http://www.statmethods.net/advstats/bootstrapping.html
+\bibitem{IEEEhowto:kopka}
+  
+http://cran.r-project.org/web/packages/bootstrap/bootstrap.pdf
+\bibitem{IEEEhowto:kopka}
+http://cran.r-project.org/doc/contrib/Fox-Companion/appendix-bootstrapping.pdf
+\bibitem{IEEEhowto:kopka}
+ J. Rissanen. Stochastic Complexity in Statistical Inquiry.
+World Scientific Publisher, Singapore, 1989.
+
+\end{thebibliography}
+
+
+\begin{IEEEbiographynophoto}{GLOSSARY}
+\newline
+ \\
+ \textbf{Bagging}. An acronym for ``bootstrap aggregatting." Start with an algorithm such that given any
+training set, the algorithm produces a prediction
+function $\phi(x)$ . The algorithm can be a decision tree
+construction, logistic regression with variable deletion, etc. Take a bootstrap sample from the training
+set and use this bootstrap training set to construct
+the predictor $\phi_{1}(x)$ . Take another bootstrap sample and using this second training set construct the
+predictor $\phi_{2}(x)$ . Continue this way for K steps. In
+regression, average all of the $\phi_{k}(x)$ to get the
+bagged predictor at x. In classification, that class
+which has the plurality vote of the $\phi_{k}(x)$ is the
+bagged predictor. Bagging has been shown effective
+in variance reduction (Breiman, 1996b).\\
+
+\textbf{Boosting}. This is a more complex way of forming
+an ensemble of predictors in classification than bagging (Freund and Schapire, 1996). It uses no randomization but proceeds by altering the weights on
+the training set. Its performance in terms of low prediction error is excellent (for details see Breiman,1998).
+
+
+\end{IEEEbiographynophoto}
+
+\appendices
+\section{PBS Script for Parallelization on LionX}
+\begin{verbatim}
+#PBS -l nodes=1:ppn=8
+#PBS -l walltime=10:00:00
+#PBS -j oe
+    
+cd $PBS_O_WORKDIR
+
+#load module and then run R 
+module load R
+time R --restore --save < sample_updated.in >
+					 outputCensus_R_new_8.out
+ 
+\end{verbatim}
+\newpage
+ 
+ \begin{verbatim}
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ \end{verbatim} 
+\section{R Script}
+%Appendix one text goes here.
+\begin{verbatim}
+ 
+#Hoofar_Ben_Pourzand_hup128_US Mail Return Challenge_Kaggle2012
+
+
+setwd("/home/hoofar/Documents/Census")
+ 
+####################################################################
+##Loading the Data
+####################################################################
+
+train <- read.csv("agg_impute_train.csv")
+test <- read.csv("agg_impute_test.csv")
+names(train)
+#####################################################################
+## DATA Preparation
+###################################################################
+
+zeros = data.frame(Mail_Return_Rate_CEN_2010 = rep(0, nrow(test)))
+means = data.frame(Mail_Return_Rate_CEN_2010 = 
+		rep(mean(train$Mail_Return_Rate_CEN_2010), nrow(test)))
+medians = data.frame(Mail_Return_Rate_CEN_2010 =
+	rep(median(train$Mail_Return_Rate_CEN_2010), nrow(test)))
+
+str(train)
+summary(train)
+library(MASS)
+library(randomForest)
+set.seed(2012)
+
+indices =cbind(x =c(2, 6 ,10:35 ))  #= c(1, 2 ,3 ) 
+				35 instead of 40 for default rf v. to run
+#choose some columns to use:
+indices_to_use = apply(indices, 1, function(i) sum(is.na(train[,i])) == 0 & sum(is.na(test[,i]))
+ == 0 & class(train[,i]) == "integer")
+
+which(indices_to_use)
+#read the Readme file for this part
+indices_to_use = c( 1, 2,   6,  7,  8,  9, 10, 11, 12, 13,
+ 14, 15, 16 ,17 ,18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30)
+ 									 #, 33, 34,35,172,163, 168,169)
+
+rf = randomForest(train[,(indices_to_use)], 
+			y=train$Mail_Return_Rate_CEN_2010, ntree=800, 					importance=TRUE,classwt=c(5,1,1),do.trace=T)
+rf_preds = predict(rf, train[,indices_to_use])
+#end of the hack
+print(rf)
+rf$confusion
+importance(rf, type=2)
+varImpPlot(rf)
+#for validation data (t's testing in fact )
+
+rf.test = randomForest(test[,(indices_to_use)],
+		 y=train$Mail_Return_Rate_CEN_2010, ntree=800, do.trace=T, importance=TRUE,classwt=c(5,1,1))
+rf_preds.test = predict(rf, test[,indices_to_use])
+print(rf.test)
+rf.test$confusion
+
+\end{verbatim}
+\begin{verbatim}
+
+
+
+
+\end{verbatim}
+\newpage
+\begin{verbatim}
+
+importance(rf.test, type=2)
+varImpPlot(rf.test)
+ 
+
+
+
+#write.csv(zeros, file = "./submissions/zeros.csv", row.names = FALSE)
+#write.csv(means, file = "./submissions/means.csv", row.names = FALSE)
+#write.csv(medians, file = "./submissions/medians.csv", row.names = FALSE)
+write.csv(rf_preds, file = "./submissions/rf.csv", row.names = FALSE)
+
+
+
+\end{verbatim}
+
+\begin{verbatim}
+
+> print(rf) %this is for the training data
+
+Call:
+ randomForest(x = train[, (indices_to_use)], 
+ 				   y = train$Mail_Return_Rate_CEN_2010,      
+ 			ntree = 800, sampsize = 7000, do.trace = T) 
+               Type of random forest: regression
+                     Number of trees: 800
+No. of variables tried at each split: 8
+
+          Mean of squared residuals: 37.78043
+                    % Var explained: 48.48
+> rf$confusion
+NULL
+> importance(rf, type=2)
+                            IncNodePurity
+State                           13051.022
+Tract                           12886.646
+Block_Group                      3822.637
+LAND_AREA                       70092.849
+AIAN_LAND                        2216.291
+URBANIZED_AREA_POP_CEN_2010      8561.875
+URBAN_CLUSTER_POP_CEN_2010       2507.696
+RURAL_POP_CEN_2010               8450.524
+Tot_Population_CEN_2010         18800.432
+Tot_Population_ACS_06_10        21843.095
+Tot_Population_ACSMOE_06_10     26486.180
+Males_CEN_2010                  18383.953
+Males_ACS_06_10                 18819.194
+Males_ACSMOE_06_10              19569.038
+Females_CEN_2010                20377.311
+Females_ACS_06_10               22966.616
+Females_ACSMOE_06_10            24132.117
+Pop_under_5_CEN_2010            31031.638
+Pop_under_5_ACS_06_10           11135.330
+Pop_under_5_ACSMOE_06_10        12240.279
+Pop_5_17_CEN_2010               16704.613
+Pop_5_17_ACS_06_10              13044.300
+Pop_5_17_ACSMOE_06_10           12777.967
+Pop_18_24_CEN_2010              67388.989
+> varImpPlot(rf)
+
+\end{verbatim}
+\begin{verbatim}
+
+\end{verbatim}
+%
+%% that's all folks
+\end{document}

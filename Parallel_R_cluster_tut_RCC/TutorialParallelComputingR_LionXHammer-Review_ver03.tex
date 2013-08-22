@@ -1,0 +1,282 @@
+\documentclass[12pt]{article}
+
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{hyperref}
+
+\usepackage{color}
+\usepackage{listings}
+\usepackage{courier}
+
+\usepackage{xcolor}
+\lstset{
+         basicstyle=\footnotesize\ttfamily, % Standardschrift
+         %numbers=left,               % Ort der Zeilennummern
+         numberstyle=\tiny,          % Stil der Zeilennummern
+         %stepnumber=2,               % Abstand zwischen den Zeilennummern
+         numbersep=5pt,              % Abstand der Nummern zum Text
+         tabsize=2,                  % Groesse von Tabs
+         extendedchars=true,         %
+         breaklines=true,            % Zeilen werden Umgebrochen
+         keywordstyle=\color{red},
+    		frame=b,         
+ %        keywordstyle=[1]\textbf,    % Stil der Keywords
+ %        keywordstyle=[2]\textbf,    %
+ %        keywordstyle=[3]\textbf,    %
+ %        keywordstyle=[4]\textbf,   \sqrt{\sqrt{}} %
+         stringstyle=\color{white}\ttfamily, % Farbe der String
+         showspaces=false,           % Leerzeichen anzeigen ?
+         showtabs=false,             % Tabs anzeigen ?
+         xleftmargin=17pt,
+         framexleftmargin=17pt,
+         framexrightmargin=5pt,
+         framexbottommargin=4pt,
+         %backgroundcolor=\color{lightgray},
+         showstringspaces=false      % Leerzeichen in Strings anzeigen ?        
+ }
+ \lstloadlanguages{% Check Dokumentation for further languages ...
+         %[Visual]Basic
+         %Pascal
+         %C
+         %C++
+         %XML
+         %HTML
+         Java
+ }
+    %\DeclareCaptionFont{blue}{\color{blue}} 
+
+  %\captionsetup[lstlisting]{singlelinecheck=false, labelfont={blue}, textfont={blue}}
+\usepackage{caption}
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox[cmyk]{0.43, 0.35, 0.35,0.01}{\parbox{\textwidth}{\hspace{15pt}#1#2#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white, singlelinecheck=false, margin=0pt, font={bf,footnotesize}}
+
+
+\begin{document}
+
+\title{Tutorial: Parallel Computing with R on LionX \& Hammer\\ Experimentation with the Parallel Packages R}
+\author{
+       % Hoofar Pourzand \\
+        Research Computing and Cyberinfrastructure Group (RCC)\\
+        Pennsylvania State University\\        
+            \and
+        %William Brower\\
+        %RCC Group, Advanced Computing Center\\
+        }
+\date{\today}
+\maketitle
+
+\begin{abstract}
+ 
+Two major thrusts for the increased interest in high performance computing in the Computational Sciences, like computational bio-science and chemical engineering, include larger data sets (Berman et al. 2003) and increased computational requirements stemming from more sophisticated computational models. \\
+
+There are a lot of examples, to support this argument. In bio-informatics and genomic researches, data-sets appear to be growing at a rate that is faster than the corresponding performance increase in hardware (Shaffer 2007). Also, many popular important sometimes hybrid computational methods like Markov chain Monte Carlo (MCMC) and Gibbs sampling, bootstrapping, and Monte Carlo simulation are used in diverse areas of statistical analysis- investigating  geographic, econometric, and biological data.\\
+One way to approach these two major demands, increased data size and increased simulation demands,  is via parallel computing. \\
+In the simplest case, data may simply be divided among parallel processors. \\
+ In this Tutorial we'll perform few simple experimentation to review the state of parallel computing among R two parallel libraries- snow and Rmpi, and provides a starting point for researchers interested in adopting parallel computing methods in R. The Tutorial is organized as follows: Section 1, reviews some common techniques to improve R code (Markus et al. 2009). Section 2 presents R packages for LionX and Hammer clusters at RCC (as of today), Section 3 provides a simple PBS for R for Batch use on clusters and Section 4 reviews few useful tips for parallel computation with R.
+\end{abstract}
+
+\section{Code Analysis for R}
+Common parallellization techniques in R include (Gentelman 2008, M. Schmidberger et al, 2009):
+
+\paragraph{Vectorized computation:}
+ Vectorized computation means any function call that, when applied to a vector, automatically operates directly on all elements of the vector. Many functions in R are vectorized. These are often implemented in C , and hence very fast. This greatly reduces the need for loops and similar constructs that are prevalent in other languages. Vectorized computations should be used when possible.\\
+%\begin{lstlisting}[label= sample test one, caption= Sample Test Vectorized Computation]
+%
+%\end{lstlisting}
+
+\paragraph{apply()-functions:}
+ There are a number of functions that can be used to apply a function, iteratively, to a set of inputs. Appropriately implemented apply()-like functions help to recognize vectorized structure of code, and are often very readily adopted to parallel computation.\\
+%\begin{lstlisting}[label= sample test one, caption= Sample Test Apply Function]
+%
+%\end{lstlisting}
+
+\paragraph{Foreign language interfaces: }
+R provides a powerful interface to functions and libraries written in other languages. The main reason for using foreign languages is efficiency, since R is not compiled. In some situations the performance of R can be substantially improved by writing code in a compiled language( M. Schmidberger et al, 2009).\\
+ The most widely used interfaces are the \fcolorbox{lightgray}{lightgray}{.C()} and \fcolorbox{lightgray}{lightgray}{.Call()} functions which provide linkage to C and compiled code. R itself is largely written in C and it is easy to make use of the internal data structures, macros and code from routines written in C (see R High Performance Computing, Task View).\\
+%\begin{lstlisting}[label= sample test three, caption= Sample Test Foreign Language Calling]
+%
+%\end{lstlisting}
+
+\section{Parallel Computing Packages in R on LionXs  Machines and Hammer}
+A thorough over view of all packages on R for parallel computing is provided by M. Schmidberger et al, 2009, in the Table 1 as of 2009.\\
+
+Also, Portable Batch Scripting (PBS) used at Penn State for resource management is a key part of parallel computation. We'll talk about it later and provide a sample script to begin with. \\
+
+\subsection{Rmpi}
+
+The package Rmpi (Yu 2002) is a wrapper to MPI, providing the R interface to low-level MPI Functions (Yu 2002). The Rmpi package includes scripts to launch R instances at the workers from the master using the command \fcolorbox{lightgray}{lightgray}{mpi.spawn.Rslaves()}
+The instances run until closed, with  \fcolorbox{lightgray}{lightgray}{ mpi.close.Rslaves()}.\\
+
+\begin{lstlisting}[label= Rmpi,caption= Rmpi Example]
+#Set up R and load the required package
+library(snow)
+library(Rmpi) #(optional)
+
+#Create a cluster of 2 slave processes for MPI
+cl <- makeCluster(2, type = "SOCK")  #MPI for mpi
+#feed from the workers
+do.call("rbind", clusterCall(cl, function(cl) Sys.info()
+                             ["nodename"]))
+                             
+#Lower Level Functions
+clusterEvalQ(cl, library(splines))   #evaluation on all nodes
+
+x = c(1,2,3,4,5) #from master to each worker assign values
+clusterExport(cl, "x")
+
+#Higher Level Functions
+parApply(cl, matrix(1:10, ncol=2), 2, sum)
+
+x <- 1:100
+# unparallel verision
+pf(x,df1=4,df2=5)
+# parallel verision
+unlist(parLapply(cl,x,pf,df1=4,df2=5))
+
+#Stopping a snow Cluster
+stopCluster(cl)
+\end{lstlisting}
+
+\begin{lstlisting}[label= Snow01,caption= Snow Example]
+#apply a set of functions F_i(x, y, a_i) on a set of (xi, yi)
+library(snow)
+cl <- makeCluster(2, type = "MPI")
+a = 1:10
+clusterExport(cl, "a")
+wrapper_F<-function(nrep){
+  x = rnorm(10)
+  y = rnorm(10)
+  z1 = y^2 + x^2 + a
+  z2 = y^2 - x^2 - a
+  outlist = list(z1 = z1, z2 = z2)
+  return(outlist)}
+parLapply(cl, 1:10, wrapper_F)
+
+#(CRAN, 2012) to set up a cluster of 5 processes on 3
+#machines (3 on dogleg), start all 5 processes, and stops the cluster.
+
+library(snow)
+machines <- c("dogleg","dogleg","dogleg", "sugar", "strike")
+cl <- makeCluster(machines,type="SOCK")
+invisible(clusterEvalQ(cl, library(nice)))
+invisible(clusterEvalQ(cl, set.my.priority(19)))
+ 
+stopCluster(cl)
+\end{lstlisting}
+\subsection{nws}
+
+The package nws (Bjornson et al. 2007) provides functions to store data in a so-called  ``Net-WorkSpace’’ (NWS), and uses the `sleigh' mechanism for parallel execution. And it’s implemented in Python language.\\
+There are two basic functions for executing tasks in parallel  \fcolorbox{lightgray}{lightgray}{eachElem()}, \fcolorbox{lightgray}{lightgray}{eachWorker()}.\\
+nws requires a running NetWorkSpace server 
+NetWorkSpaces currently supports the Python, Matlab, and R languages and allows limited cross-language data exchange.\\
+
+
+\subsection{snow}
+
+The package snow ( Rossini et al. 2007) supports simple parallel computing in R.\\
+The snow package includes scripts to launch R instances on the slaves with \fcolorbox{lightgray}{lightgray}{cl $<-$ makeCluster()}.\\
+The instances run until they are closed explicitly via the command  \fcolorbox{lightgray}{lightgray}{stopCluster(cl)}. The package provides support for high-level parallel functions like  \fcolorbox{lightgray}{lightgray}{apply()} and simple error-
+handling to report errors from the workers to the manager.
+
+
+\section{PBS script for R}
+Depending on the number of jobs on the computing nodes or one a queue, a resource manager system should allocate the requested memory and CPU time for each job submitted in batch. Also, they provide  load balancing which is very useful especially when the package doesn’t provide it itself- Rmpi, snow, snowfall and biopara support load balancing for the \fcolorbox{lightgray}{lightgray}{apply()} functions. At RCC, this is done through a PBS, independent of the R language. PBS and other schedulers make parallel computing for administrators.  One example of a PBS scripts used with R is described here.\\
+Consult \url{http://rcc.its.psu.edu/user_guides/system_utilities/pbs/} for more information.
+\begin{lstlisting}[label= PBS for R,caption= Sample PBS for R Script]
+#PBS -l nodes=1:ppn=4
+#PBS -l walltime=2:00:00
+#PBS -j oe
+cd $PBS_O_WORKDIR
+# load module and then run R
+module load R/2.15.2
+time R --no-restore --no-save <inputfile_name.in> output_name.out
+#PBS -M your_email_address_here 
+                            
+\end{lstlisting}
+
+\subsection*{Installation}
+Please contact us at $rcc@rcc.psu.edu$ to install or customize any package that you may need for your work.\\
+\subsection*{Fault tolerance and load balancing}
+Fault tolerance for parallel algorithms provides continued operations in the event of failure of some workers. On the other hand, load balancing is a technique to spread processes between resources in order to get optimal resource utilization (M. Schmidberger et al, 2009).\\
+Only the packages snowFT and biopara have intergraded solutions for faults tolerance (M. Schmidberger et al, 2009). However, one can take necessary measures for backing up temporary results through his PBS.\\
+
+\section{Tips for Parallel Computing with R}
+
+Some generally-accepted best practices from parallel computing (M. Schmidberger et al, 2009)
+\begin{itemize}
+\item Communication is much slower than computation; care should be taken to minimize unnecessary data transfer to and from workers
+
+\item Maximize the amount of computation performed in each remote evaluation.
+Some functions produce large results, so it pays to reduce these on the workers before returning the final return.
+ 
+\item R's rules for lexical scoping, its serializing functions and the environments they are defined in all require some care to avoid transmitting unnecessary data to workers. 
+
+\item Functions used in  \fcolorbox{lightgray}{lightgray}{apply()} -like calls should be defined in the global environment, or in a package name space. 
+
+\item Every R instance requires its own main memory, and the amount of main memory will frequently limit scalability.
+
+\item Grid computing with R is relatively new, at early stage level (M. Schmidberger et al, 2009)
+
+\end{itemize}
+\subsection*{More Advanced tips:}
+\begin{itemize}
+
+\item Very large objects, e.g., provided as additional \fcolorbox{lightgray}{lightgray}{apply()}-like function parameters,
+might in some cases be more efficiently constructed on each worker, rather than
+being forwarded from the manager to each worker (M. Schmidberger et al, 2009).
+
+\item Random number generators require extra care. It is important to avoid producing the
+same random number stream on each worker and at the same time be able to facilitate reproducible research.
+Special-purpose packages (rsprng, rlecuyer) are available; the snow package provides
+an integrated interface to these packages.
+
+\end{itemize}
+ 
+\bibliographystyle{}
+\bibliography{}
+
+\begin{thebibliography}{}
+
+\bibitem{}
+Markus Schmidberger, Martin Morgan, Dirk Eddelbuettel, Hao Yu, Luke Tierney, Ulrich Mansmann (2009),  State of the Art in Parallel Computing with R, Journal of Statistical Software.
+
+\bibitem{}
+Berman F, Fox G, Hey AJ (2003). Grid Computing: Making the Global Infrastructure a Reality.
+
+\bibitem{}
+Gentleman R (2008). R Programming for Bioinformatics, volume 12 of Chapman \& Hall/CRC
+Computer Science \& Data Analysis. Chapman \& Hall/CRC.
+
+\bibitem{}
+Gentleman RC, Carey VJ, Bates DM, Bolstad B, Dettling M, Dudoit S, Ellis B, Gautier
+L, Ge Y, Gentry J, Hornik K, Hothorn T, Huber W, Iacus S, Irizarry R, Leisch F, Li
+C, Maechler M, Rossini AJ, Sawitzki G, Smith C, Smyth G, Tierney L, Yang JY, Zhang
+J (2004). Bioconductor: Open Software Development for Computational Biology and
+Bioinformatics. Genome Biology,  URL \url{http://genomebiology.com/2004/5/10/R80}.
+
+\bibitem{}
+Yu H (2002). Rmpi: Parallel Statistical Computing in R. R News, 2(2), 10-14. URL
+\url{http://CRAN.R-project.org/doc/Rnews/}.
+
+\bibitem{}
+Bjornson R, Carriero N, Weston S (2007). Python NetWorkSpaces and Parallel Programs.
+Dr. Dobb's Journal, pp. 1-7. URL \url{http://www.ddj.com/web-development/200001971}.
+
+\bibitem{}
+Rossini AJ, Tierney L, Li NM (2007). Simple Parallel Statistical Computing in R. Journal
+of Computational and Graphical Statistics, 16(2), 399-420
+
+\bibitem{}
+CRAN Task View: High-Performance and Parallel Computing with R:
+\url{http://cran.r-project.org/web/views/HighPerformanceComputing.html}
+
+\bibitem{} 
+Luke Tierney, HPC computing for HPC class, University of Iowa
+\url{http://www.stat.uiowa.edu/~luke/classes/295-hpc/}
+\url{http://users.stat.umn.edu/~yiyang/seminar/}
+
+\end{thebibliography}
+
+ 
+\end{document}

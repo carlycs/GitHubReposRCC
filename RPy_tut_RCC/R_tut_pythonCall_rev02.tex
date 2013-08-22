@@ -1,0 +1,132 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{hyperref}
+
+\usepackage{xcolor}
+
+\usepackage{color}
+\usepackage{listings}
+\usepackage{courier}
+
+\lstset{
+         basicstyle=\footnotesize\ttfamily, % Standardschrift
+         %numbers=left,               % Ort der Zeilennummern
+         numberstyle=\tiny,          % Stil der Zeilennummern
+         %stepnumber=2,               % Abstand zwischen den Zeilennummern
+         numbersep=5pt,              % Abstand der Nummern zum Text
+         tabsize=2,                  % Groesse von Tabs
+         extendedchars=true,         %
+         breaklines=true,            % Zeilen werden Umgebrochen
+         keywordstyle=\color{red},
+    		frame=b,         
+ %        keywordstyle=[1]\textbf,    % Stil der Keywords
+ %        keywordstyle=[2]\textbf,    %
+ %        keywordstyle=[3]\textbf,    %
+ %        keywordstyle=[4]\textbf,   \sqrt{\sqrt{}} %
+         stringstyle=\color{white}\ttfamily, % Farbe der String
+         showspaces=false,           % Leerzeichen anzeigen ?
+         showtabs=false,             % Tabs anzeigen ?
+         xleftmargin=17pt,
+         framexleftmargin=17pt,
+         framexrightmargin=5pt,
+         framexbottommargin=4pt,
+         %backgroundcolor=\color{lightgray},
+         showstringspaces=false      % Leerzeichen in Strings anzeigen ?        
+ }
+ \lstloadlanguages{% Check Dokumentation for further languages ...
+         %[Visual]Basic
+         %Pascal
+         %C
+         %C++
+         %XML
+         %HTML
+         Java
+ }
+    %\DeclareCaptionFont{blue}{\color{blue}} 
+
+  %\captionsetup[lstlisting]{singlelinecheck=false, labelfont={blue}, textfont={blue}}
+\usepackage{caption}
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox[cmyk]{0.43, 0.35, 0.35,0.01}{\parbox{\textwidth}{\hspace{15pt}#1#2#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white, singlelinecheck=false, margin=0pt, font={bf,footnotesize}}
+
+
+\begin{document}
+
+\title{Interfacing between R and Python}
+\author{
+        Hoofar Pourzand \\
+        Research Computing and Cyberinfrustructure Group\\
+        Pennsylvania State University\\        
+            \and
+        %William Brower\\
+        %RCC Group, Advanced Computing Center\\
+        }
+\date{\today}
+\maketitle
+
+\begin{abstract}
+R has a rich developing community and consequently a growing list of libraries, methods for data mining \& statistical analysis of data. Also, Python is a popular interpreted language used in many back-end and front end web-development technologies, as well as data mining tools \& libraries that easily incorporates Object oriented design concepts into a code. Calling R from Python, for a very simple example is shown here to give Python the extra computational edge that R already provides.\\
+RPy is the interface between R and Python which is used for this task. 
+\end{abstract}
+
+\section{Preparation}
+
+\paragraph{Installing RPy}
+If you are running Ubuntu, simply type: \\
+\begin{lstlisting}[label=Adding RPy ,caption= Installing RPy]
+$sudo apt-get install python-rpy
+\end{lstlisting}
+
+To load RPy from Python, whether in interactive mode or in Batch (PBS) mode, to your python script just add:
+\begin{lstlisting}[label=Loading RPy ,caption= Loading PPy]
+>>>from rpy import*
+\end{lstlisting}
+This will load a Python class instance r.
+
+\paragraph{Running RPy}
+From Python prompt type in:
+\begin{lstlisting}[label=Adding RPy ,caption= Running RPy]
+>>>r.hsit(r.rnorm(10), main= '', xlab= '')
+>>>a = [5,12, 13]
+>>>b= [10,28,30]
+>>>lmout = r.lm('v2~v1' , data = r.data_frame(v1=a, v2= b))
+
+\end{lstlisting}
+
+Note R function names are prefixed by \textit{r.} .
+Note Python does not include a tilde character, in these cases we need to specify the model formula via a string. For calling R functions in Python that have a period in their R function name, an underscore is substituted, e.g. $data\_frame() 
+$
+The output object is a Python Dictionary- closest to an R list type.\\
+To access the results accordingly, just type in the attributes title:\\
+\begin{verbatim}
+lmout['coefficient']
+>>>lmout[coefficients']['v1']
+\end{verbatim}
+To avoid syntax clashes between Python and R, you can submit R commands to work on R name-spaces by using the function r().
+
+\begin{lstlisting}[label=example ,caption= Calling Python in R Example]
+>>>r.library('lattice')
+>>>r.assign('a',a)           ***copy a variable from Python's namespace to R.
+>>>r.assign('b', b)
+>>>r('g <- expand.grid(a,b)')   *** assigning the result to g in R's namespace.
+>>>r('g$Var3 <- g$Var1^2 +g$Var1 * g$Var2')
+>>>r('wireframe(Var3~Var1 + Var2, g)')
+>>>r('plot(wireframe(Var3 ~Var1 +Var2, g)))      *** wireframe() didn't diplay.
+
+\end{lstlisting}
+
+\bibliographystyle{}
+\bibliography{}
+
+\begin{thebibliography}{}
+\bibitem{}
+\url{http://rpy.sourceforge.net/rpy/doc/rpy.pdf}
+\bibitem{}
+\url{http://www.daimi.au.dk/~besen/TBiB2007/lecture-notes/rpy.html}
+
+\end{thebibliography}
+
+ 
+\end{document}
